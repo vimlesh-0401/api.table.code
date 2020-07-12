@@ -3,7 +3,7 @@ const router = express.Router({mergeParams: true});
 const {localQuery} = require('../local_query');
 const { Table } = require('../models/table.model');
 const {each} = require('lodash');
-const data = require('../database/data.json');
+const data = require('./data.json');
 router.get('/', localQuery, (request, response, next) => {
   const params =  request.params;
   let sort = params.sort
@@ -35,6 +35,39 @@ router.get('/', localQuery, (request, response, next) => {
   });
 })
 
+router.post('/', localQuery, (request, response, next) => {
+  const tableParams = request.params.table;
+  const table = new Table(tableParams);
+  table.save().then(record => {
+    response.status(201).json(record)
+  }).catch(error => {
+    response.status(422).json(error);
+  })
+})
+router.get('/:id', localQuery, (request, response, next) => {
+  Table.findById(request.params.id).then(record => {
+    response.status(201).json(record)
+  }).catch(error => {
+    response.status(422).json(error);
+  })
+})
+
+router.put('/:id', localQuery, (request, response, next) => {
+  const tableParams = request.params.table;
+  Table.findByIdAndUpdate(request.params.id, tableParams).then(record => {
+    response.status(201).json(record)
+  }).catch(error => {
+    response.status(422).json(error);
+  })
+})
+
+router.delete('/:id', localQuery, (request, response, next) => {
+  Table.findByIdAndDelete(request.params.id).then(doc => {
+    response.status(200).json(doc);
+  }).catch(error => {
+    response.status(422).json(error);
+  })
+})
 router.get('/dump', localQuery, async (request, response, next) => {
   await Table.deleteMany({});
   const count = await Table.countDocuments();
