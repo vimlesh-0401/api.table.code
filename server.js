@@ -1,0 +1,34 @@
+const express     = require('express');
+const bodyParser  = require('body-parser');
+const http        = require('http');
+
+const app = express();
+const tables = require('./app/routes/tables.routes');
+require('./app/database/mongodb');
+
+app.use(bodyParser.urlencoded({ extended: true, limit: '150mb' }));
+app.use(bodyParser.json());
+
+app.use('/tables', tables);
+
+app.use((request, response, next) => {
+  const error = new Error("Not found.");
+  error.status = 404;
+  next(error);
+});
+
+app.use((error, request, response, next) =>  {
+  response.status(error.status || 500);
+  response.json({
+    error: {
+      message: error.message
+    }
+  });
+});
+
+const port = 3301;
+
+const  server = http.createServer(app);
+server.listen(port, () => {
+  console.log(`listening on http://localhost:${port}`);
+});
